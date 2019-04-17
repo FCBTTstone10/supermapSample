@@ -12,6 +12,7 @@
 #include "MapEditor/UGMapEditorWnd.h"
 #include "Toolkit/UGEnvironment.h"
 #include "Workspace/UGWorkspace.h"
+#include "Map/UGLayer.h"
 using namespace UGC;
 QMapControl::QMapControl()
 {
@@ -42,6 +43,25 @@ bool QMapControl::openMap(UGString mapName)
     }
     return false;
 }
+
+void QMapControl::openMapIServer(UGWorkspace *workspace)
+{
+    UGDataSource* pDataSource = NULL;
+    // 指定一个数据源（DataSource）
+    UGString dataSourceName = _U("http://192.168.2.158:8090/iserver/services/map-ugcv5-jiaxing/rest/maps/jiaxing");
+
+    // 给要载入的数据源拟定一个别名
+    UGString aliasName = _U("jiaxing");
+    pDataSource = workspace->OpenDataSource(dataSourceName,aliasName,UGEngineType::Rest);
+    qDebug()<<pDataSource->GetDatasetCount();
+    // 取出第一个dataSet
+    //UGDataset *dataset = pDataSource->GetDataset(0);
+    UGDataset *dataset = pDataSource->GetDatasets()->GetAt(0);
+    // 用自己实现的方法将dataset展示到地图中
+    //appendDatasetToMap(dataset);
+    m_pmap->m_Layers.AddDataset(dataset);
+    this->Invalidate();
+}
 void QMapControl::SetWorkspace(UGWorkspace *workspace)
 {
     m_pmap->SetWorkspace(workspace);
@@ -54,7 +74,9 @@ void QMapControl::SetWorkspace(UGWorkspace *workspace)
        {
            return NULL;
        }
-        UGLayer* pLayer=m_pmap->m_Layers.AddDataset(pDataset, pDataset->GetType());
+        UGLayer* pLayer = m_pmap->m_Layers.AddDataset(pDataset);
+        qDebug()<<pDataset->GetType();
+        this->Invalidate();
         return pLayer;
 }
 
@@ -67,7 +89,7 @@ void QMapControl::SetWorkspace(UGWorkspace *workspace)
 
         // 给要载入的数据源拟定一个别名
         UGString aliasName = _U("Jingjin2");
-        dataSource = workspace->OpenDataSource(dataSourceName,aliasName,UGEngineType::UDB);
+        dataSource = workspace->OpenDataSource(dataSourceName,aliasName,UGEngineType::UDB,false);
         UGDataset *dataset_Point = NULL;
         UGDataset *dataset_Line = NULL;
         UGDataset *dataset_Region = NULL;
@@ -94,13 +116,16 @@ void QMapControl::SetWorkspace(UGWorkspace *workspace)
         }
 
             // 用自己实现的方法将dataset展示到地图中
-//        UGLayer* layer_Point= appendDatasetToMap(dataset_Point);
-//        UGLayer* layer_Line= appendDatasetToMap(dataset_Line);
-//        UGLayer* layer_Region= appendDatasetToMap(dataset_Region);
-        addNewPoint(dataset_Point);
-        appendDatasetToMap(dataset_Point);
-        appendDatasetToMap(dataset_Line);
-        appendDatasetToMap(dataset_Region);
+         addNewPoint(dataset_Point);
+        UGLayer* layer_Point= appendDatasetToMap(dataset_Point);
+        setPointLayerStyle(layer_Point);
+       // UGLayer* layer_Line= appendDatasetToMap(dataset_Line);
+       // UGLayer* layer_Region= appendDatasetToMap(dataset_Region);
+
+
+//        appendDatasetToMap(dataset_Point);
+//        appendDatasetToMap(dataset_Line);
+//        appendDatasetToMap(dataset_Region);
  }
 
  void QMapControl::addNewPoint(UGDataset *dataset_Point)
@@ -118,17 +143,34 @@ void QMapControl::SetWorkspace(UGWorkspace *workspace)
          queryDef.m_nOptions = UGQueryDef::Both;
      }
      queryDef.m_nMode = UGQueryDef::GeneralQuery;
-     queryDef.m_nCursorType = UGQueryDef::OpenStatic;
+     queryDef.m_nCursorType = UGQueryDef::OpenDynamic;
      UGRecordset *pToRecordset = pToDataset->Query(queryDef);
      pToRecordset->MoveFirst();
      qDebug()<<pToRecordset->IsEOF()<<"xxx"<<pToRecordset->GetRecordCount();
-        //遍历，如果不为UGRecordset链表结尾
+     //遍历，如果不为UGRecordset链表结尾
      UGGeoPoint *piont = new UGGeoPoint();
      piont->SetX(120.71079567);
      piont->SetY(30.75963467);
      UGbool isAdded = pToRecordset->AddNew(piont);
+     pToRecordset->Edit();
+     pToRecordset->Update();
+
      qDebug()<<isAdded;
      qDebug()<<pToRecordset->IsEOF()<<"xxx"<<pToRecordset->GetRecordCount();
+ }
+
+ void QMapControl::setPointLayerStyle(UGLayer *layer)
+ {
+     // 创建一个风格并设置其属性
+     UGStyle styl_point;
+
+     styl_point.SetMarkerStyle(4);     // 设置符号（通过符号编号）
+     styl_point.SetMarkerHeight(120);      // 设置符号高度
+     styl_point.SetMarkerWidth(150);      // 设置符号宽度
+     styl_point.SetLineColor(UGRGB(255,0,255));// 设置符号颜色
+     styl_point.SetMarkerAngle(PI/2);     // 设置符号偏转角度
+     // 给图层设置风格
+     layer->SetStyle(styl_point);
  }
 
 void QMapControl::ZoomIn()

@@ -18,22 +18,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mdiArea->addSubWindow(map2D);
 
     UGWorkspace *p_mWorkspace=new UGWorkspace();
-    UGWorkspaceConnection p_mWorkspaceConnection=UGWorkspaceConnection();
-    QString qStrPath = "E:/MAPFILE/wapian@jiaxin.smwu";
+   // UGWorkspaceConnection p_mWorkspaceConnection=UGWorkspaceConnection();
+   // QString qStrPath = "E:/MAPFILE/wapian@jiaxin.smwu";
     //QString qStrPath = "E:/SuperMapiObject/sample/data/China400_E-map.smwu";
-    p_mWorkspaceConnection.m_strServer=QStringToUGString(qStrPath);
-    p_mWorkspaceConnection.m_nWorkspaceType=9;
+   // p_mWorkspaceConnection.m_strServer=QStringToUGString(qStrPath);
+   // p_mWorkspaceConnection.m_nWorkspaceType=9;
+//    if(!p_mWorkspace->Open(p_mWorkspaceConnection))
+//    {
+//        QMessageBox::critical(this,"ERROR",QString::fromLocal8Bit("打开工作空间失败"));
+//        return;
+//    }
 
-
-    if(!p_mWorkspace->Open(p_mWorkspaceConnection))
-    {
-        QMessageBox::critical(this,"ERROR",QString::fromLocal8Bit("打开工作空间失败"));
-        return;
-    }
-
-    qmapControl->SetWorkspace(p_mWorkspace);
-    qmapControl->openMap(p_mWorkspace->m_MapStorages.GetNameAt(0));
-    qmapControl->findEachTypeDataFromFile(p_mWorkspace);
+    //qmapControl->SetWorkspace(p_mWorkspace);
+     qmapControl->openMapIServer(p_mWorkspace);
+    //qmapControl->openMap(p_mWorkspace->m_MapStorages.GetNameAt(0));
+   // qmapControl->findEachTypeDataFromFile(p_mWorkspace);
     ui->mdiArea->setViewMode(QMdiArea::TabbedView);
     ui->mdiArea->setTabsClosable(true);
     ui->mdiArea->setTabShape(QTabWidget::Triangular);

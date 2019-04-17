@@ -77,10 +77,12 @@ protected:
 
 public:
      bool openMap(UGString mapName);
+     void openMapIServer(UGWorkspace *workspace);
      void SetWorkspace(UGWorkspace *workspace);
      UGLayer* appendDatasetToMap(UGDataset* pDataset);//像地图中添加数据层
      void findEachTypeDataFromFile(UGWorkspace *workspace);
      void addNewPoint( UGDataset *dataset_Point);
+     void setPointLayerStyle( UGLayer* layer );
      virtual void ZoomIn();
      virtual void ZoomOut();
      virtual void Pan();
